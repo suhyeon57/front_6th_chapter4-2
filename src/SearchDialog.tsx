@@ -87,44 +87,50 @@ const PAGE_SIZE = 100;
 const fetchMajors = () => axios.get<Lecture[]>("/schedules-majors.json");
 const fetchLiberalArts = () =>
   axios.get<Lecture[]>("/schedules-liberal-arts.json");
-const createCachedFetcher = () => {
+
+const createApiCache = () => {
   const cache = new Map<string, Promise<any>>();
 
   return {
     fetchMajors: () => {
       if (!cache.has("majors")) {
-        console.log("API Call - Majors", performance.now());
+        console.log("실제 API 호출 - 전공", performance.now());
         cache.set("majors", fetchMajors());
+      } else {
+        console.log("캐시에서 반환 - 전공", performance.now());
       }
       return cache.get("majors")!;
     },
+
     fetchLiberalArts: () => {
       if (!cache.has("liberalArts")) {
-        console.log("API Call - Liberal Arts", performance.now());
+        console.log("실제 API 호출 - 교양", performance.now());
         cache.set("liberalArts", fetchLiberalArts());
+      } else {
+        console.log("캐시에서 반환 - 교양", performance.now());
       }
       return cache.get("liberalArts")!;
     },
-    clearCache: () => {
-      cache.clear();
-    },
+
+    clearCache: () => cache.clear(),
   };
 };
 
-const cachedFetcher = createCachedFetcher();
+// 캐시 인스턴스 생성
+const apiCache = createApiCache();
 
-// 개선된 fetchAllLectures - 실제로는 최대 2번의 API 호출만 발생
+// 개선된 fetchAllLectures - 실제로는 2번만 API 호출됨
 const fetchAllLectures = async () => {
-  const results = await Promise.all([
-    cachedFetcher.fetchMajors(),
-    cachedFetcher.fetchLiberalArts(),
-    cachedFetcher.fetchMajors(), // 캐시에서 반환
-    cachedFetcher.fetchLiberalArts(), // 캐시에서 반환
-    cachedFetcher.fetchMajors(), // 캐시에서 반환
-    cachedFetcher.fetchLiberalArts(), // 캐시에서 반환
+  return await Promise.all([
+    apiCache.fetchMajors(), // API 호출
+    apiCache.fetchLiberalArts(), // API 호출
+    apiCache.fetchMajors(), // 캐시 반환
+    apiCache.fetchLiberalArts(), // 캐시 반환
+    apiCache.fetchMajors(), // 캐시 반환
+    apiCache.fetchLiberalArts(), // 캐시 반환
   ]);
-  return results;
 };
+
 const SearchItem = memo(
   ({
     addSchedule,
