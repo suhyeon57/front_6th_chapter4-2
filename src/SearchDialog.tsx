@@ -35,7 +35,7 @@ import { parseSchedule } from "./utils.ts";
 import axios from "axios";
 import { DAY_LABELS } from "./constants.ts";
 import { memo } from "react";
-import { useAutoCallback } from "./hooks/UseAutoCallback.ts";
+import { useAutoCallback } from "./hooks/useAutoCallback.ts";
 
 interface Props {
   searchInfo: {
@@ -159,10 +159,10 @@ const SearchItem = memo(
 
 const TimeSelector = memo(
   ({
-    searchOptions,
+    times,
     changeSearchOption,
   }: {
-    searchOptions: SearchOption;
+    times: SearchOption["times"];
     changeSearchOption: (
       field: keyof SearchOption,
       value: SearchOption[typeof field]
@@ -173,11 +173,11 @@ const TimeSelector = memo(
         <FormLabel>시간</FormLabel>
         <CheckboxGroup
           colorScheme="green"
-          value={searchOptions.times}
+          value={times}
           onChange={(values) => changeSearchOption("times", values.map(Number))}
         >
           <Wrap spacing={1} mb={2}>
-            {searchOptions.times
+            {times
               .sort((a, b) => a - b)
               .map((time) => (
                 <Tag key={time} size="sm" variant="outline" colorScheme="blue">
@@ -186,7 +186,7 @@ const TimeSelector = memo(
                     onClick={() =>
                       changeSearchOption(
                         "times",
-                        searchOptions.times.filter((v) => v !== time)
+                        times.filter((v) => v !== time)
                       )
                     }
                   />
@@ -219,11 +219,11 @@ const TimeSelector = memo(
 const MajorSelector = memo(
   ({
     allMajors,
-    searchOptions,
+    majors,
     changeSearchOption,
   }: {
     allMajors: string[];
-    searchOptions: SearchOption;
+    majors: SearchOption["majors"];
     changeSearchOption: (
       field: keyof SearchOption,
       value: SearchOption[typeof field]
@@ -234,20 +234,20 @@ const MajorSelector = memo(
         <FormLabel>전공</FormLabel>
         <CheckboxGroup
           colorScheme="green"
-          value={searchOptions.majors}
+          value={majors}
           onChange={(values) =>
             changeSearchOption("majors", values as string[])
           }
         >
           <Wrap spacing={1} mb={2}>
-            {searchOptions.majors.map((major) => (
+            {majors.map((major) => (
               <Tag key={major} size="sm" variant="outline" colorScheme="blue">
                 <TagLabel>{major.split("<p>").pop()}</TagLabel>
                 <TagCloseButton
                   onClick={() =>
                     changeSearchOption(
                       "majors",
-                      searchOptions.majors.filter((v) => v !== major)
+                      majors.filter((v) => v !== major)
                     )
                   }
                 />
@@ -279,10 +279,10 @@ const MajorSelector = memo(
 
 const GradeSelector = memo(
   ({
-    searchOptions,
+    grades,
     changeSearchOption,
   }: {
-    searchOptions: SearchOption;
+    grades: SearchOption["grades"];
     changeSearchOption: (
       field: keyof SearchOption,
       value: SearchOption[typeof field]
@@ -292,7 +292,7 @@ const GradeSelector = memo(
       <FormControl>
         <FormLabel>학년</FormLabel>
         <CheckboxGroup
-          value={searchOptions.grades}
+          value={grades}
           onChange={(value) => changeSearchOption("grades", value.map(Number))}
         >
           <HStack spacing={4}>
@@ -307,12 +307,13 @@ const GradeSelector = memo(
     );
   }
 );
+
 const DaySelector = memo(
   ({
-    searchOptions,
+    days,
     changeSearchOption,
   }: {
-    searchOptions: SearchOption;
+    days: SearchOption["days"];
     changeSearchOption: (
       field: keyof SearchOption,
       value: SearchOption[typeof field]
@@ -322,7 +323,7 @@ const DaySelector = memo(
       <FormControl>
         <FormLabel>요일</FormLabel>
         <CheckboxGroup
-          value={searchOptions.days}
+          value={days}
           onChange={(value) => changeSearchOption("days", value as string[])}
         >
           <HStack spacing={4}>
@@ -340,10 +341,10 @@ const DaySelector = memo(
 
 const SearchSelector = memo(
   ({
-    searchOptions,
+    query,
     changeSearchOption,
   }: {
-    searchOptions: SearchOption;
+    query: SearchOption["query"];
     changeSearchOption: (
       field: keyof SearchOption,
       value: SearchOption[typeof field]
@@ -354,7 +355,7 @@ const SearchSelector = memo(
         <FormLabel>검색어</FormLabel>
         <Input
           placeholder="과목명 또는 과목코드"
-          value={searchOptions.query}
+          value={query}
           onChange={(e) => changeSearchOption("query", e.target.value)}
         />
       </FormControl>
@@ -364,10 +365,10 @@ const SearchSelector = memo(
 
 const CreditSelector = memo(
   ({
-    searchOptions,
+    credits,
     changeSearchOption,
   }: {
-    searchOptions: SearchOption;
+    credits: SearchOption["credits"];
     changeSearchOption: (
       field: keyof SearchOption,
       value: SearchOption[typeof field]
@@ -377,7 +378,7 @@ const CreditSelector = memo(
       <FormControl>
         <FormLabel>학점</FormLabel>
         <Select
-          value={searchOptions.credits}
+          value={credits}
           onChange={(e) => changeSearchOption("credits", e.target.value)}
         >
           <option value="">전체</option>
@@ -527,37 +528,37 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
           <VStack spacing={4} align="stretch">
             <HStack spacing={4}>
               <SearchSelector
-                searchOptions={searchOptions}
+                query={searchOptions.query}
                 changeSearchOption={changeSearchOption}
               />
 
               <CreditSelector
-                searchOptions={searchOptions}
+                credits={searchOptions.credits}
                 changeSearchOption={changeSearchOption}
               />
             </HStack>
 
             <HStack spacing={4}>
               <GradeSelector
-                searchOptions={searchOptions}
+                grades={searchOptions.grades}
                 changeSearchOption={changeSearchOption}
               />
 
               <DaySelector
-                searchOptions={searchOptions}
+                days={searchOptions.days}
                 changeSearchOption={changeSearchOption}
               />
             </HStack>
 
             <HStack spacing={4}>
               <TimeSelector
-                searchOptions={searchOptions}
+                times={searchOptions.times}
                 changeSearchOption={changeSearchOption}
               />
 
               <MajorSelector
                 allMajors={allMajors}
-                searchOptions={searchOptions}
+                majors={searchOptions.majors}
                 changeSearchOption={changeSearchOption}
               />
             </HStack>
