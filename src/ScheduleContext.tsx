@@ -1,4 +1,4 @@
-import React, { createContext, PropsWithChildren, useContext, useState } from "react";
+import React, { createContext, PropsWithChildren, useContext, useState, useMemo } from "react";
 import { Schedule } from "./types.ts";
 import dummyScheduleMap from "./dummyScheduleMap.ts";
 
@@ -19,9 +19,13 @@ export const useScheduleContext = () => {
 
 export const ScheduleProvider = ({ children }: PropsWithChildren) => {
   const [schedulesMap, setSchedulesMap] = useState<Record<string, Schedule[]>>(dummyScheduleMap);
+  
+  const contextValue = useMemo(() => {
+    return { schedulesMap, setSchedulesMap };
+  }, [schedulesMap]);
 
   return (
-    <ScheduleContext.Provider value={{ schedulesMap, setSchedulesMap }}>
+    <ScheduleContext.Provider value={contextValue}>
       {children}
     </ScheduleContext.Provider>
   );

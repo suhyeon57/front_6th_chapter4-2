@@ -56,6 +56,28 @@ export default function ScheduleDndProvider({ children }: PropsWithChildren) {
     })
   );
 
+  //  const updateSchedulePosition = useAutoCallback((
+  //   tableId: string, 
+  //   index: string, 
+  //   nowDayIndex: number, 
+  //   moveDayIndex: number, 
+  //   moveTimeIndex: number
+  // ) => {
+  //   setSchedulesMap({
+  //     ...schedulesMap,
+  //     [tableId]: schedulesMap[tableId].map((targetSchedule, targetIndex) => {
+  //       if (targetIndex !== Number(index)) {
+  //         return { ...targetSchedule };
+  //       }
+  //       return {
+  //         ...targetSchedule,
+  //         day: DAY_LABELS[nowDayIndex + moveDayIndex],
+  //         range: targetSchedule.range.map((time) => time + moveTimeIndex),
+  //       };
+  //     }),
+  //   });
+  // });
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDragEnd = useAutoCallback((event: any) => {
     const { active, delta } = event;
@@ -81,6 +103,7 @@ export default function ScheduleDndProvider({ children }: PropsWithChildren) {
         };
       }),
     });
+    //updateSchedulePosition(tableId, index, nowDayIndex, moveDayIndex, moveTimeIndex);
   });
 
   return (

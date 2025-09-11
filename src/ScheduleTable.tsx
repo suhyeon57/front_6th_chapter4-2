@@ -104,8 +104,18 @@ const Table = memo(
     );
   }
 );
+const ScheduleTitle = memo(({ lecture, room }: { lecture: Schedule["lecture"]; room: Schedule["room"] }) => {
+  return (
+    <>
+      <Text fontSize="sm" fontWeight="bold">
+        {lecture.title}
+      </Text>
+      <Text fontSize="xs">{room}</Text>
+    </>
+  );
+});
 
-const ScheduleTable = ({
+const ScheduleTable = memo(({
   tableId,
   schedules,
   onScheduleTimeClick,
@@ -152,9 +162,9 @@ const ScheduleTable = ({
       ))}
     </Box>
   );
-};
+});
 
-const DraggableSchedule = ({
+const DraggableSchedule = memo(({
   id,
   data,
   bg,
@@ -163,11 +173,11 @@ const DraggableSchedule = ({
     onDeleteButtonClick: () => void;
   }) => {
   const { day, range, room, lecture } = data;
-  const { attributes, setNodeRef, listeners, transform } = useDraggable({ id });
+  const { attributes, setNodeRef, listeners, transform, isDragging } = useDraggable({ id });
   const leftIndex = DAY_LABELS.indexOf(day as (typeof DAY_LABELS)[number]);
   const topIndex = range[0] - 1;
   const size = range.length;
-
+ 
   return (
     <Popover>
       <PopoverTrigger>
@@ -186,10 +196,7 @@ const DraggableSchedule = ({
           {...listeners}
           {...attributes}
         >
-          <Text fontSize="sm" fontWeight="bold">
-            {lecture.title}
-          </Text>
-          <Text fontSize="xs">{room}</Text>
+          <ScheduleTitle lecture={lecture} room={room} />
         </Box>
       </PopoverTrigger>
       <PopoverContent onClick={(event) => event.stopPropagation()}>
@@ -204,6 +211,6 @@ const DraggableSchedule = ({
       </PopoverContent>
     </Popover>
   );
-};
+});
 
 export default ScheduleTable;

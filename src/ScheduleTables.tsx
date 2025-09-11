@@ -2,10 +2,11 @@ import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
 import ScheduleTable from "./ScheduleTable.tsx";
 import { useScheduleContext } from "./ScheduleContext.tsx";
 import SearchDialog from "./SearchDialog.tsx";
-import { useState } from "react";
-import ScheduleDndProvider from "./ScheduleDndProvider.tsx"; // 명시적으로 확장자 포함
+import { useState, memo, use } from "react";
+import { useAutoCallback } from "./hooks/useAutoCallback.ts";
 
-export const ScheduleTables = () => {
+
+export const ScheduleTables = memo(() => {
   const { schedulesMap, setSchedulesMap } = useScheduleContext();
   const [searchInfo, setSearchInfo] = useState<{
     tableId: string;
@@ -29,12 +30,11 @@ export const ScheduleTables = () => {
     });
   };
 
-  return (
-    <>
-      <Flex w="full" gap={6} p={6} flexWrap="wrap">
-        {Object.entries(schedulesMap).map(([tableId, schedules], index) => (
-          <Stack key={tableId} width="600px">
-            <Flex justifyContent="space-between" alignItems="center">
+  const ScheduleHeader = memo((
+    { index, tableId } : { index : number , tableId : string }
+  ) => {
+    return (
+      <Flex justifyContent="space-between" alignItems="center">
               <Heading as="h3" fontSize="lg">
                 시간표 {index + 1}
               </Heading>
@@ -61,22 +61,41 @@ export const ScheduleTables = () => {
                 </Button>
               </ButtonGroup>
             </Flex>
+    )
+  });
+  const handleSearchInfo = useAutoCallback((tableId: string) => {
+    setSearchInfo({ tableId });
+  });
+const handleRemoveSchedule = useAutoCallback(
+  (tableId: string, day: string, time: number) => {
+    setSchedulesMap((prev) => ({
+      ...prev,
+      [tableId]: prev[tableId].filter(
+        (schedule) =>
+          schedule.day !== day || !schedule.range.includes(time)
+      ),
+    }));
+  }
+);
+
+const handleDeleteButtonClick = useAutoCallback((tableId: string) => 
+    ({ day, time }: { day: string; time: number }) => {
+      handleRemoveSchedule(tableId, day, time);
+    }
+  );
+
+  return (
+    <>
+      <Flex w="full" gap={6} p={6} flexWrap="wrap">
+        {Object.entries(schedulesMap).map(([tableId, schedules], index) => (
+          <Stack key={tableId} width="600px">
+           <ScheduleHeader index = {index} tableId={tableId}/>
             <ScheduleTable
               key={`schedule-table-${index}`}
               schedules={schedules}
               tableId={tableId}
-              onScheduleTimeClick={(timeInfo) =>
-                setSearchInfo({ tableId, ...timeInfo })
-              }
-              onDeleteButtonClick={({ day, time }) =>
-                setSchedulesMap((prev) => ({
-                  ...prev,
-                  [tableId]: prev[tableId].filter(
-                    (schedule) =>
-                      schedule.day !== day || !schedule.range.includes(time)
-                  ),
-                }))
-              }
+              onScheduleTimeClick={handleSearchInfo}
+              onDeleteButtonClick={handleDeleteButtonClick(tableId)}
             />
           </Stack>
         ))}
@@ -87,4 +106,4 @@ export const ScheduleTables = () => {
       />
     </>
   );
-};
+});
