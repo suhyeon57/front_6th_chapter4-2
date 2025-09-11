@@ -470,7 +470,7 @@ const SearchDialog = ({ searchInfo, onClose }: Props) => {
 
     setSchedulesMap((prev) => ({
       ...prev,
-      [tableId]: [...prev[tableId], ...schedules],
+      [tableId]: [...(prev[tableId] || []), ...schedules],
     }));
 
     onClose();
