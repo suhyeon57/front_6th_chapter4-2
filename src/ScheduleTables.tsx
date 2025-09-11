@@ -1,12 +1,17 @@
 import { Button, ButtonGroup, Flex, Heading, Stack } from "@chakra-ui/react";
 import ScheduleTable from "./ScheduleTable.tsx";
-import { useScheduleContext } from "./ScheduleContext.tsx";
+import {
+  useScheduleContextAction,
+  useScheduleContextValue,
+} from "./ScheduleContext.tsx";
 import SearchDialog from "./SearchDialog.tsx";
 import { useState, memo } from "react";
 import { useAutoCallback } from "./hooks/useAutoCallback.ts";
+import ScheduleDndProvider from "./ScheduleDndProvider.tsx";
 
 export const ScheduleTables = memo(() => {
-  const { schedulesMap, setSchedulesMap } = useScheduleContext();
+  const schedulesMap = useScheduleContextValue();
+  const setSchedulesMap = useScheduleContextAction();
   const [searchInfo, setSearchInfo] = useState<{
     tableId: string;
     day?: string;
@@ -88,16 +93,18 @@ export const ScheduleTables = memo(() => {
     <>
       <Flex w="full" gap={6} p={6} flexWrap="wrap">
         {Object.entries(schedulesMap).map(([tableId, schedules], index) => (
-          <Stack key={tableId} width="600px">
-            <ScheduleHeader index={index} tableId={tableId} />
-            <ScheduleTable
-              key={`schedule-table-${index}`}
-              schedules={schedules}
-              tableId={tableId}
-              onScheduleTimeClick={handleSearchInfo}
-              onDeleteButtonClick={handleDeleteButtonClick(tableId)}
-            />
-          </Stack>
+          <ScheduleDndProvider key={tableId}>
+            <Stack key={tableId} width="600px">
+              <ScheduleHeader index={index} tableId={tableId} />
+              <ScheduleTable
+                key={`schedule-table-${index}`}
+                schedules={schedules}
+                tableId={tableId}
+                onScheduleTimeClick={handleSearchInfo}
+                onDeleteButtonClick={handleDeleteButtonClick(tableId)}
+              />
+            </Stack>
+          </ScheduleDndProvider>
         ))}
       </Flex>
       <SearchDialog
