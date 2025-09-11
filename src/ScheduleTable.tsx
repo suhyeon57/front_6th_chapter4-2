@@ -18,7 +18,7 @@ import { Schedule } from "./types.ts";
 import { fill2, parseHnM } from "./utils.ts";
 import { useDndContext, useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { ComponentProps, Fragment, memo } from "react";
+import { ComponentProps, Fragment, memo, useMemo } from "react";
 
 interface Props {
   tableId: string;
@@ -115,6 +115,23 @@ const ScheduleTitle = memo(({ lecture, room }: { lecture: Schedule["lecture"]; r
   );
 });
 
+const ScheduleDeleteButton = memo((
+  { onDeleteButtonClick }: { onDeleteButtonClick: () => void }
+) => {
+  return(
+    <PopoverContent onClick={(event) => event.stopPropagation()}>
+        <PopoverArrow />
+        <PopoverCloseButton />
+        <PopoverBody>
+          <Text>강의를 삭제하시겠습니까?</Text>
+          <Button colorScheme="red" size="xs" onClick={onDeleteButtonClick}>
+            삭제
+          </Button>
+        </PopoverBody>
+      </PopoverContent>
+  )
+});
+
 const ScheduleTable = memo(({
   tableId,
   schedules,
@@ -145,7 +162,8 @@ const ScheduleTable = memo(({
       outline={activeTableId === tableId ? "5px dashed" : undefined}
       outlineColor="blue.300"
     >
-      <Table onScheduleTimeClick={onScheduleTimeClick} />
+      <Table onScheduleTimeClick={onScheduleTimeClick}/>
+
       {schedules.map((schedule, index) => (
         <DraggableSchedule
           key={`${schedule.lecture.title}-${index}`}
@@ -177,6 +195,8 @@ const DraggableSchedule = memo(({
   const leftIndex = DAY_LABELS.indexOf(day as (typeof DAY_LABELS)[number]);
   const topIndex = range[0] - 1;
   const size = range.length;
+
+   const memoizedDeleteClick = useMemo(() => onDeleteButtonClick, [onDeleteButtonClick]);
  
   return (
     <Popover>
@@ -199,16 +219,7 @@ const DraggableSchedule = memo(({
           <ScheduleTitle lecture={lecture} room={room} />
         </Box>
       </PopoverTrigger>
-      <PopoverContent onClick={(event) => event.stopPropagation()}>
-        <PopoverArrow />
-        <PopoverCloseButton />
-        <PopoverBody>
-          <Text>강의를 삭제하시겠습니까?</Text>
-          <Button colorScheme="red" size="xs" onClick={onDeleteButtonClick}>
-            삭제
-          </Button>
-        </PopoverBody>
-      </PopoverContent>
+      <ScheduleDeleteButton onDeleteButtonClick={memoizedDeleteClick} />
     </Popover>
   );
 });

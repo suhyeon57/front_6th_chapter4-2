@@ -66,6 +66,7 @@ export const ScheduleTables = memo(() => {
   const handleSearchInfo = useAutoCallback((tableId: string) => {
     setSearchInfo({ tableId });
   });
+  
 const handleRemoveSchedule = useAutoCallback(
   (tableId: string, day: string, time: number) => {
     setSchedulesMap((prev) => ({
