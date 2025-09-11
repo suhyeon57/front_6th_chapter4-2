@@ -5,11 +5,10 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { PropsWithChildren } from "react";
+import { memo, PropsWithChildren } from "react";
 import { CellSize, DAY_LABELS } from "./constants.ts";
-import { useScheduleContextAction } from "./ScheduleContext.tsx";
+import { useScheduleActions } from "./ScheduleContext.tsx";
 import { useAutoCallback } from "./hooks/useAutoCallback.ts";
-import { pre } from "framer-motion/client";
 
 function createSnapModifier(): Modifier {
   return ({ transform, containerNodeRect, draggingNodeRect }) => {
@@ -47,8 +46,11 @@ function createSnapModifier(): Modifier {
 
 const modifiers = [createSnapModifier()];
 
-export default function ScheduleDndProvider({ children }: PropsWithChildren) {
-  const setSchedulesMap = useScheduleContextAction();
+function ScheduleDndProvider({
+  children,
+  draggableId,
+}: PropsWithChildren & { draggableId: string }) {
+  const { setSchedulesMap } = useScheduleActions();
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -63,6 +65,9 @@ export default function ScheduleDndProvider({ children }: PropsWithChildren) {
     const { x, y } = delta;
     const [tableId, index] = active.id.split(":");
 
+    if (tableId !== draggableId) {
+      return;
+    }
     setSchedulesMap((prev) => {
       const schedule = prev[tableId][index];
       const nowDayIndex = DAY_LABELS.indexOf(
@@ -98,3 +103,5 @@ export default function ScheduleDndProvider({ children }: PropsWithChildren) {
     </DndContext>
   );
 }
+
+export default memo(ScheduleDndProvider);

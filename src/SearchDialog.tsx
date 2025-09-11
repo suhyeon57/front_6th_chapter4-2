@@ -29,7 +29,7 @@ import {
   VStack,
   Wrap,
 } from "@chakra-ui/react";
-import { useScheduleContextAction } from "./ScheduleContext.tsx";
+import { useScheduleActions } from "./ScheduleContext.tsx";
 import { Lecture } from "./types.ts";
 import { parseSchedule } from "./utils.ts";
 import axios from "axios";
@@ -399,7 +399,7 @@ const CreditSelector = memo(
   }
 );
 const SearchDialog = ({ searchInfo, onClose }: Props) => {
-  const setSchedulesMap = useScheduleContextAction();
+  const { setSchedulesMap } = useScheduleActions();
 
   const loaderWrapperRef = useRef<HTMLDivElement>(null);
   const loaderRef = useRef<HTMLDivElement>(null);

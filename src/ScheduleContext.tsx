@@ -1,57 +1,68 @@
-import React, {
-  createContext,
-  PropsWithChildren,
-  useContext,
-  useState,
-} from "react";
-import { Schedule } from "./types.ts";
+import React, { PropsWithChildren, useMemo, useState } from "react";
 import dummyScheduleMap from "./dummyScheduleMap.ts";
+import { useAutoCallback } from "./hooks/useAutoCallback.ts";
+import { Schedule } from "./types.ts";
 
-type ScheduleContextValueType = Record<string, Schedule[]>;
+const ScheduleStateContext = React.createContext<Record<
+  string,
+  Schedule[]
+> | null>(null);
 
-type ScheduleContextActionType = React.Dispatch<
-  React.SetStateAction<Record<string, Schedule[]>>
->;
+const ScheduleActionsContext = React.createContext<{
+  setSchedulesMap: React.Dispatch<
+    React.SetStateAction<Record<string, Schedule[]>>
+  >;
+  onDeleteScheduleButtonClick: (
+    tableId: string,
+    day: string,
+    time: number
+  ) => void;
+} | null>(null);
 
-const ScheduleContextValue = createContext<
-  ScheduleContextValueType | undefined
->(undefined);
-const ScheduleContextAction = createContext<
-  ScheduleContextActionType | undefined
->(undefined);
+export const useScheduleState = () => {
+  const ctx = React.useContext(ScheduleStateContext);
 
-export const useScheduleContextValue = () => {
-  const context = useContext(ScheduleContextValue);
-  if (context === undefined) {
-    throw new Error("useSchedule must be used within a ScheduleProvider");
+  if (!ctx) {
+    throw new Error("useScheduleState must be used within ScheduleProvider");
   }
-  return context;
+
+  return ctx;
+};
+export const useScheduleActions = () => {
+  const ctx = React.useContext(ScheduleActionsContext);
+
+  if (!ctx) {
+    throw new Error("useScheduleActions must be used within ScheduleProvider");
+  }
+
+  return ctx;
 };
 
-export const useScheduleContextAction = () => {
-  const context = useContext(ScheduleContextAction);
-  if (context === undefined) {
-    throw new Error("useSchedule must be used within a ScheduleProvider");
-  }
-  return context;
-};
 export const ScheduleProvider = ({ children }: PropsWithChildren) => {
   const [schedulesMap, setSchedulesMap] =
     useState<Record<string, Schedule[]>>(dummyScheduleMap);
 
-  // const contextValue = useMemo(() => {
-  //   return { schedulesMap };
-  // }, [schedulesMap]);
+  const onDeleteScheduleButtonClick = useAutoCallback(
+    (tableId: string, day: string, time: number) => {
+      setSchedulesMap((prev) => ({
+        ...prev,
+        [tableId]: prev[tableId].filter(
+          (s) => s.day !== day || !s.range.includes(time)
+        ),
+      }));
+    }
+  );
 
-  // const actionValue = useMemo(() => {
-  //   return { setSchedulesMap };
-  // }, [setSchedulesMap]);
+  const actions = useMemo(
+    () => ({ setSchedulesMap, onDeleteScheduleButtonClick }),
+    [setSchedulesMap, onDeleteScheduleButtonClick]
+  );
 
   return (
-    <ScheduleContextValue.Provider value={schedulesMap}>
-      <ScheduleContextAction.Provider value={setSchedulesMap}>
-        <>{children}</>
-      </ScheduleContextAction.Provider>
-    </ScheduleContextValue.Provider>
+    <ScheduleActionsContext.Provider value={actions}>
+      <ScheduleStateContext.Provider value={schedulesMap}>
+        {children}
+      </ScheduleStateContext.Provider>
+    </ScheduleActionsContext.Provider>
   );
 };

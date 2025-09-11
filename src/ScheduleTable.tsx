@@ -18,6 +18,7 @@ import { fill2, parseHnM } from "./utils.ts";
 import { useDndContext, useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { ComponentProps, Fragment, memo, useMemo } from "react";
+import { useScheduleActions } from "./ScheduleContext.tsx";
 
 interface Props {
   tableId: string;
@@ -123,14 +124,20 @@ const ScheduleTitle = memo(
 );
 
 const ScheduleDeleteButton = memo(
-  ({ onDeleteButtonClick }: { onDeleteButtonClick: () => void }) => {
+  ({ tableId, day, time }: { tableId: string; day: string; time: number }) => {
+    const { onDeleteScheduleButtonClick } = useScheduleActions();
+    const realTableId = tableId.split(":")[0];
     return (
       <PopoverContent onClick={(event) => event.stopPropagation()}>
         <PopoverArrow />
         <PopoverCloseButton />
         <PopoverBody>
           <Text>강의를 삭제하시겠습니까?</Text>
-          <Button colorScheme="red" size="xs" onClick={onDeleteButtonClick}>
+          <Button
+            colorScheme="red"
+            size="xs"
+            onClick={() => onDeleteScheduleButtonClick(realTableId, day, time)}
+          >
             삭제
           </Button>
         </PopoverBody>
@@ -140,7 +147,7 @@ const ScheduleDeleteButton = memo(
 );
 
 const ScheduleTable = memo(
-  ({ tableId, schedules, onScheduleTimeClick, onDeleteButtonClick }: Props) => {
+  ({ tableId, schedules, onScheduleTimeClick }: Props) => {
     const getColor = (lectureId: string): string => {
       const lectures = [...new Set(schedules.map(({ lecture }) => lecture.id))];
       const colors = ["#fdd", "#ffd", "#dff", "#ddf", "#fdf", "#dfd"];
@@ -173,12 +180,6 @@ const ScheduleTable = memo(
             id={`${tableId}:${index}`}
             data={schedule}
             bg={getColor(schedule.lecture.id)}
-            onDeleteButtonClick={() =>
-              onDeleteButtonClick?.({
-                day: schedule.day,
-                time: schedule.range[0],
-              })
-            }
           />
         ))}
       </Box>
@@ -191,21 +192,13 @@ const DraggableSchedule = memo(
     id,
     data,
     bg,
-    onDeleteButtonClick,
-  }: { id: string; data: Schedule } & ComponentProps<typeof Box> & {
-      onDeleteButtonClick: () => void;
-    }) => {
+  }: { id: string; data: Schedule } & ComponentProps<typeof Box>) => {
     const { day, range, room, lecture } = data;
     const { attributes, setNodeRef, listeners, transform, isDragging } =
       useDraggable({ id });
     const leftIndex = DAY_LABELS.indexOf(day as (typeof DAY_LABELS)[number]);
     const topIndex = range[0] - 1;
     const size = range.length;
-
-    const memoizedDeleteClick = useMemo(
-      () => onDeleteButtonClick,
-      [onDeleteButtonClick]
-    );
 
     return (
       <Popover isLazy>
@@ -229,7 +222,7 @@ const DraggableSchedule = memo(
           </Box>
         </PopoverTrigger>
         {!isDragging && (
-          <ScheduleDeleteButton onDeleteButtonClick={memoizedDeleteClick} />
+          <ScheduleDeleteButton tableId={id} day={day} time={range[0]} />
         )}
       </Popover>
     );
