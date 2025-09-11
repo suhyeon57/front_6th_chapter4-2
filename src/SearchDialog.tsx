@@ -84,9 +84,17 @@ const TIME_SLOTS = [
 
 const PAGE_SIZE = 100;
 
-const fetchMajors = () => axios.get<Lecture[]>("/schedules-majors.json");
+const getApiPath = (filename: string) => {
+  if (process.env.NODE_ENV === "production") {
+    return `https://hanghae-plus.github.io/front_6th_chapter4-2/${filename}`;
+  }
+  return `/${filename}`;
+};
+
+const fetchMajors = () =>
+  axios.get<Lecture[]>(getApiPath("schedules-majors.json"));
 const fetchLiberalArts = () =>
-  axios.get<Lecture[]>("/schedules-liberal-arts.json");
+  axios.get<Lecture[]>(getApiPath("schedules-liberal-arts.json"));
 
 const createApiCache = () => {
   const cache = new Map<string, Promise<any>>();
